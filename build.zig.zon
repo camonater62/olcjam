@@ -1,0 +1,15 @@
+.{
+    .name = "olcjam2024",
+    .version = "0.0.1",
+    .dependencies = .{
+        .raylib = .{
+            .url = "https://github.com/raysan5/raylib/archive/2d94d8d06def4a96a8727e148fe12e2095c6799c.zip",
+            .hash = "1220f7752f59737a9220d325c474fcbfa0b82ec66866a0daf5f96a330ac94046c4ed",
+        },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src",
+    },
+}
