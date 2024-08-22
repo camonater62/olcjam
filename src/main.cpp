@@ -77,6 +77,13 @@ int main()
                     float xpos = 2.0f * glm::sin(ho.Time() / 100.0f);
                     float ypos = -blockheight / 2.0f;
                     float zpos = 50 * float(ho.Time() - GetMusicTimePlayed(audio) * 1000) / 1000.0f;
+
+                    if (zpos < -10) {
+                        continue;
+                    }
+                    if (zpos > 100) {
+                        break;
+                    }
                     Vector3 pos = {xpos, ypos, zpos};
                     Color color = (ho.Type() == osu::HitObjectType::CIRCLE) ? ground_color : wall_color;
                     DrawCube(pos, 1.f, blockheight, 1.f, color);
