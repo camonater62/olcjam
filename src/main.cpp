@@ -41,28 +41,43 @@ int main()
     Color ground_color = GetColor(0xbfd0b9ff);
     Color wall_color = GetColor(0xcbb9d0ff);
 
+    float walk_speed = 15.0f;
+
     Camera3D camera = {0};
-    camera.position = {0, 1, 0};
-    camera.target = {0, 1, 1};
+    camera.position = {0, 1.f, 0};
+    camera.target = {0, 0, 4};
     camera.up = {0, 1, 0};
-    camera.fovy = 60;
+    camera.fovy = 70;
     camera.projection = CAMERA_PERSPECTIVE;
 
     osu::Beatmap beatmap("res/1470072 Mage - The Words I Never Said/Mage - The Words I Never Said (Strategas) [Regret].osu.txt");
     cout << beatmap << endl;
 
-    InitAudioDevice();
-    Music audio = LoadMusicStream("res/1470072 Mage - The Words I Never Said/audio.wav");
-    PlayMusicStream(audio);
-
     InitWindow(screenWidth, screenHeight, "OSU Runner!");
     SetWindowTitle(fmt::format("{} - {}", beatmap.Artist(), beatmap.Title()).c_str());
+    InitAudioDevice();
+    Music audio = LoadMusicStream("res/1470072 Mage - The Words I Never Said/audio.mp3");
+    PlayMusicStream(audio);
+    SeekMusicStream(audio, GetTime());
+
 
     while (!WindowShouldClose())
     {
-        UpdateMusicStream(audio);
 
-        UpdateCamera(&camera, CAMERA_FIRST_PERSON);
+        float dt = GetFrameTime();
+
+        if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT)) {
+            camera.position.x += dt * walk_speed;
+            camera.target.x += dt * walk_speed;
+        }
+        if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) {
+            camera.position.x -= dt * walk_speed;
+            camera.target.x -= dt * walk_speed;
+        }
+
+        UpdateCamera(&camera, CAMERA_CUSTOM);
+
+        UpdateMusicStream(audio);
 
         BeginDrawing();
         {
@@ -70,18 +85,18 @@ int main()
 
             BeginMode3D(camera);
             {
-                DrawGrid(1000, 1);
+                // DrawGrid(1000, 1);
 
                 for (const auto& ho : beatmap.HitObjects()) {
                     float blockheight = 0.5f;
                     float xpos = 2.0f * glm::sin(ho.Time() / 100.0f);
                     float ypos = -blockheight / 2.0f;
-                    float zpos = 50 * float(ho.Time() - GetMusicTimePlayed(audio) * 1000) / 1000.0f;
+                    float zpos = 50 * float(ho.Time() - GetTime() * 1000) / 1000.0f;
 
                     if (zpos < -10) {
                         continue;
                     }
-                    if (zpos > 100) {
+                    if (zpos > 200) {
                         break;
                     }
                     Vector3 pos = {xpos, ypos, zpos};
