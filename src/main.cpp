@@ -1,47 +1,29 @@
 #include "osu.hpp"
 
-#include <raylib.h>
-#include <glm/glm.hpp>
 #include <cstring>
 #include <iostream>
+#include <raylib.h>
+#include <raymath.h>
+#include <rlgl.h>
 
 #define FMT_HEADER_ONLY
 #include <fmt/format.h>
 
-using namespace glm;
 using namespace std;
 
-#pragma region Helpers
+int main() {
+    int screenWidth = GetScreenWidth();
+    int screenHeight = GetScreenHeight();
 
-Matrix matToMatrix(mat4x4 m4) {
-    Matrix m = {0};
-    memcpy(&m, &m4, 16 * sizeof(float));
-    return m;
-}
-
-mat4 matrixToMat(Matrix m) {
-    mat4 m4 = {0};
-    memcpy(&m4, &m, 16 * sizeof(float));
-    return m4;
-}
-
-#pragma endregion
-
-#pragma region main
-
-int main()
-{
-    int screenWidth = 2560;
-    int screenHeight = 1440;
-
-    SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_VSYNC_HINT);
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_FULLSCREEN_MODE);
     SetTargetFPS(0);
     InitAudioDevice();
     InitWindow(screenWidth, screenHeight, "OSU Runner!");
 
     const char *cwd = GetWorkingDirectory();
     ChangeDirectory("res/songs");
-    FilePathList files = LoadDirectoryFilesEx(".", ".osu", true);
+
+    FilePathList files = LoadDirectoryFiles("."); // LoadDirectoryFilesEx(".", ".osu", true);
     for (int i = 0; i < files.count; i++) {
         cout << files.paths[i] << endl;
     }
@@ -52,10 +34,10 @@ int main()
 
     float walk_speed = 15.0f;
 
-    Camera3D camera = {0};
-    camera.position = {0, 1.f, 0};
-    camera.target = {0, 0, 4};
-    camera.up = {0, 1, 0};
+    Camera3D camera = { 0 };
+    camera.position = { 0, 1.f, 0 };
+    camera.target = { 0, 0, 4 };
+    camera.up = { 0, 1, 0 };
     camera.fovy = 70;
     camera.projection = CAMERA_PERSPECTIVE;
 
@@ -74,8 +56,7 @@ int main()
     std::string backgroundfile = folder + beatmap.BackgroundFilename();
     Texture2D background = LoadTexture(backgroundfile.c_str());
 
-    while (!WindowShouldClose())
-    {
+    while (!WindowShouldClose()) {
 
         float dt = GetFrameTime();
 
@@ -98,26 +79,62 @@ int main()
 
             BeginMode3D(camera);
             {
-                // DrawGrid(1000, 1);
-
-                for (const auto& ho : beatmap.HitObjects()) {
+                for (const auto &ho : beatmap.HitObjects()) {
                     float blockheight = 0.5f;
-                    float xpos = 2.0f * glm::sin(ho.Time() / 100.0f);
-                    float ypos = -blockheight / 2.0f;
-                    float zpos = 50 * float(ho.Time() - GetTime() * 1000) / 1000.0f;
 
-                    if (zpos < -10) {
+                    if (GetTime() > (ho.Time() + ho.Slides() * ho.Length()) / 1000.0f + 10.0f) {
                         continue;
                     }
-                    if (zpos > 200) {
+                    if (GetTime() + 30.0f < ho.Time() / 1000.0f) {
                         break;
                     }
-                    Vector3 pos = {xpos, ypos, zpos};
-                    Color color = (ho.Type() == osu::HitObjectType::CIRCLE) ? ground_color : wall_color;
-                    DrawCube(pos, 1.f, blockheight, 1.f, color);
+                    if (ho.Type() == osu::HitObjectType::CIRCLE) {
+                        Color color = ground_color;
+                        float xpos = 2.0f * sin(ho.Time() / 100.0f);
+                        float ypos = -blockheight;
+                        float zpos = 50 * float(ho.Time() - GetTime() * 1000) / 1000.0f;
+                        Vector3 pos = { xpos, ypos, zpos };
+                        DrawCube(pos, 1.f, blockheight, 1.f, color);
+                        // DrawCylinder(pos, 0.5f, 0.5f, blockheight, 20, color);
+                    } else {
+                        Color color = wall_color;
+                        Vector3 lastpos = Vector3Zero();
+                        for (int i = 0; i <= ho.Slides(); i++) {
+                            int length = i * ho.Length();
+                            float time = ho.Time() + length;
+                            float xpos = 2.0f * sin(time / 100.0f);
+                            float ypos = -blockheight / 2.0f;
+                            float zpos = 50 * float(time - GetTime() * 1000) / 1000.0f;
+                            Vector3 pos = { xpos, ypos, zpos };
+                            // DrawCube(pos, 1.f, blockheight + 0.002f, 1.f,
+                            //     ColorBrightness(wall_color, -0.2f));
+                            if (i > 0) {
+                                rlPushMatrix();
+                                {
+                                    rlTranslatef(lastpos.x, lastpos.y, lastpos.z);
+                                    Vector3 offset = Vector3Subtract(pos, lastpos);
+                                    Vector3 normaloffset = Vector3Normalize(offset);
+                                    Vector3 posz = { 0, 0, 1 };
+
+                                    float angle = Vector3Angle(normaloffset, posz);
+                                    if (offset.x < 0) {
+                                        angle = -angle;
+                                    }
+
+                                    float mag = Vector3Length(offset);
+                                    rlRotatef(RAD2DEG * angle, 0, 1, 0);
+                                    Vector3 sliderpos = { 0, 0, mag / 2 };
+                                    DrawCube(sliderpos, 1.f, blockheight, mag, color);
+                                }
+                                rlPopMatrix();
+                            }
+
+                            lastpos = pos;
+                        }
+                    }
                 }
 
-                Vector3 ind_pos = {camera.position.x, 10, 100};
+                Vector3 ind_pos = { camera.position.x, 10, 100 };
                 DrawBillboard(camera, background, ind_pos, 20, DARKGRAY);
             }
             EndMode3D();
@@ -127,10 +144,10 @@ int main()
         EndDrawing();
     }
 
+    UnloadMusicStream(audio);
+    UnloadTexture(background);
     CloseWindow();
     CloseAudioDevice();
 
     return 0;
 }
-
-#pragma endregion // main
