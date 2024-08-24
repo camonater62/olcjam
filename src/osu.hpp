@@ -194,6 +194,7 @@ namespace osu
         int leadin;
         std::vector<HitObject> hitObjects;
         std::string audioFilename;
+        std::string backgroundFilename;
         std::string title;
         std::string artist;
         int beatmapID;
@@ -206,7 +207,7 @@ namespace osu
 
         int EndTime() 
         {
-             HitObject& last = hitObjects.back();
+            HitObject& last = hitObjects.back();
             return last.Time() + last.Length();
         }
 
@@ -216,17 +217,22 @@ namespace osu
             return hitObjects;
         }
 
-        std::string& AudioFilename() 
+        std::string AudioFilename() 
         {
             return audioFilename;
         }
 
-        std::string& Title() 
+        std::string BackgroundFilename()
+        {
+            return backgroundFilename;
+        }
+
+        std::string Title() 
         {
             return title;
         }
 
-        std::string& Artist() 
+        std::string Artist() 
         {
             return artist;
         }
@@ -338,10 +344,21 @@ namespace osu
                 hitObjects.emplace_back(x, y, hitType, time, noteLength);
             };
 
+            auto EventFunc = [&](std::string line)
+            {
+                std::vector<std::string> args = split(line, ",");
+
+                if (args.size() >= 3 && args[0] == "0" && args[1] == "0") {
+                    backgroundFilename = args[2].substr(1, args[2].size() - 2);
+                }
+            };
+
             std::string line = "";
             std::string section = "";
             while (getline(osu, line))
             {
+                trim(line);
+
                 if (line.length() < 1)
                     continue;
 
@@ -369,6 +386,10 @@ namespace osu
                 {
                     HitObjFunc(line);
                 }
+                else if (section == "Events") 
+                {
+                    EventFunc(line);
+                }
             }
         }
     };
@@ -378,6 +399,7 @@ namespace osu
         os << "Title: " << song.Title() << std::endl;
         os << "Artist: " << song.Artist() << std::endl;
         os << "AudioFilename: " << song.AudioFilename() << std::endl;
+        os << "BackgroundFilename: " << song.BackgroundFilename() << std::endl;
         os << "BeatmapID: " << song.BeatmapID() << std::endl;
         os << "LeadIn: " << song.LeadIn() << "ms" << std::endl;
 

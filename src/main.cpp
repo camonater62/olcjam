@@ -36,7 +36,16 @@ int main()
 
     SetConfigFlags(FLAG_WINDOW_HIGHDPI | FLAG_VSYNC_HINT);
     SetTargetFPS(0);
+    InitAudioDevice();
+    InitWindow(screenWidth, screenHeight, "OSU Runner!");
 
+    const char *cwd = GetWorkingDirectory();
+    ChangeDirectory("res/songs");
+    FilePathList files = LoadDirectoryFilesEx(".", ".osu", true);
+    for (int i = 0; i < files.count; i++) {
+        cout << files.paths[i] << endl;
+    }
+    ChangeDirectory(cwd);
 
     Color ground_color = GetColor(0xbfd0b9ff);
     Color wall_color = GetColor(0xcbb9d0ff);
@@ -50,16 +59,20 @@ int main()
     camera.fovy = 70;
     camera.projection = CAMERA_PERSPECTIVE;
 
-    osu::Beatmap beatmap("res/1470072 Mage - The Words I Never Said/Mage - The Words I Never Said (Strategas) [Regret].osu.txt");
+    std::string folder = "res/songs/1294750 S3RL feat. Kayliana - You Are Mine/";
+    std::string osufile = folder + "S3RL feat. Kayliana - You Are Mine (Nuvolina) [I'm yours].osu";
+
+    osu::Beatmap beatmap(osufile);
     cout << beatmap << endl;
 
-    InitWindow(screenWidth, screenHeight, "OSU Runner!");
     SetWindowTitle(fmt::format("{} - {}", beatmap.Artist(), beatmap.Title()).c_str());
-    InitAudioDevice();
-    Music audio = LoadMusicStream("res/1470072 Mage - The Words I Never Said/audio.mp3");
+    std::string audiofile = folder + beatmap.AudioFilename();
+    Music audio = LoadMusicStream(audiofile.c_str());
     PlayMusicStream(audio);
     SeekMusicStream(audio, GetTime());
 
+    std::string backgroundfile = folder + beatmap.BackgroundFilename();
+    Texture2D background = LoadTexture(backgroundfile.c_str());
 
     while (!WindowShouldClose())
     {
@@ -104,9 +117,8 @@ int main()
                     DrawCube(pos, 1.f, blockheight, 1.f, color);
                 }
 
-                Vector3 ind_pos = camera.position;
-                ind_pos.z += 100;
-                DrawSphere(ind_pos, 1, RAYWHITE);
+                Vector3 ind_pos = {camera.position.x, 10, 100};
+                DrawBillboard(camera, background, ind_pos, 20, DARKGRAY);
             }
             EndMode3D();
 
