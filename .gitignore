@@ -1,3 +1,6 @@
 zig-out/
 .vscode/
 .zig-cache/
+*.wav
+*.jpg
+*.png

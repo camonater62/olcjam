@@ -223,9 +223,9 @@ private:
         };
 
         auto MetadataFunc = [&](std::string line) {
-            if (line.rfind("Title") == 0) {
+            if (line.rfind("Title:") == 0) {
                 title = line.substr(line.find(':') + 1);
-            } else if (line.rfind("Artist") == 0) {
+            } else if (line.rfind("Artist:") == 0) {
                 artist = line.substr(line.find(':') + 1);
             } else if (line.rfind("BeatmapID") == 0) {
                 beatmapID = stoi(line.substr(line.find(':') + 1));
