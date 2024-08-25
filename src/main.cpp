@@ -4,7 +4,6 @@
 #include <iostream>
 using namespace std;
 
-#include <raygui.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <rlgl.h>
@@ -44,11 +43,11 @@ int main() {
     int screenWidth = GetScreenWidth();
     int screenHeight = GetScreenHeight();
 
-    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | 0);
+    SetConfigFlags(FLAG_VSYNC_HINT | FLAG_WINDOW_HIGHDPI | FLAG_FULLSCREEN_MODE);
 
     SetTargetFPS(0);
     InitAudioDevice();
-    InitWindow(screenWidth, screenHeight, "OSU Runner!");
+    InitWindow(screenWidth, screenHeight, "Music Runner!");
 
     Font font = LoadFontEx("res/ShareTechMono-Regular.ttf", 32, 0, 250);
 
@@ -226,9 +225,6 @@ int main() {
                         { rightedge, lineheight, -100 }, { rightedge, lineheight, 1000 }, GRAY);
                 }
                 EndMode3D();
-
-                DrawFPS(10, 10);
-
             } else {
                 if (IsKeyPressed(KEY_DOWN) || IsKeyPressedRepeat(KEY_DOWN)) {
                     songselection += 1;

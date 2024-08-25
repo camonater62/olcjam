@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
     const exe = b.addExecutable(.{
-        .name = "hello",
+        .name = "MusicRunner",
         .target = target,
         .optimize = optimize,
     });
@@ -19,7 +19,6 @@ pub fn build(b: *std.Build) void {
 
     const srcs = [_][]const u8{
         "src/main.cpp",
-        "src/raygui.cpp",
     };
 
     for (srcs) |src| {
