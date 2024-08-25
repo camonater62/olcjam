@@ -278,7 +278,7 @@ private:
             HitObjectType hitType = HitObjectType::CIRCLE;
             if (type & 0b00000010) {
                 hitType = HitObjectType::SLIDER;
-                int length = stoi(args[7]);
+                float length = stof(args[7]);
                 slides = stoi(args[6]);
                 noteLength = int(length / (sliderMultiplier * 100 * sliderVelocity) * beatLength);
             } else if (type & 0b00001000) {
