@@ -166,6 +166,7 @@ private:
     std::string backgroundFilename;
     std::string title;
     std::string artist;
+    std::string version;
     int beatmapID;
 
 public:
@@ -182,23 +183,27 @@ public:
         return hitObjects;
     }
 
-    std::string AudioFilename() {
+    std::string AudioFilename() const {
         return audioFilename;
     }
 
-    std::string BackgroundFilename() {
+    std::string BackgroundFilename() const {
         return backgroundFilename;
     }
 
-    std::string Title() {
+    std::string Title() const {
         return title;
     }
 
-    std::string Artist() {
+    std::string Artist() const {
         return artist;
     }
 
-    int BeatmapID() {
+    std::string Version() const {
+        return version;
+    }
+
+    int BeatmapID() const {
         return beatmapID;
     }
 
@@ -224,6 +229,8 @@ private:
                 artist = line.substr(line.find(':') + 1);
             } else if (line.rfind("BeatmapID") == 0) {
                 beatmapID = stoi(line.substr(line.find(':') + 1));
+            } else if (line.rfind("Version") == 0) {
+                version = line.substr(line.find(':') + 1);
             }
         };
 
